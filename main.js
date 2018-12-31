@@ -4,12 +4,31 @@ const port = 3000
 const { Builder, By, Key, promise, until } = require('selenium-webdriver');
 const firefox = require('selenium-webdriver/firefox');
 
+var os = require( 'os' );
+
+var fs = require('fs');
+var index = fs.readFileSync('index.html');
+var controller = fs.readFileSync('controller.js', 'utf8');
+
+var networkInterfaces = os.networkInterfaces( );
+var ip = networkInterfaces['enp3s0'][0]['address'] 
+
 let driver = new Builder()
     .forBrowser('firefox')
     .setFirefoxOptions(/* ... */)
     .build();
 
-app.get('/', (req, res) => res.send('Hello World!'))
+app.get('/', (req, res) => {
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.end(index);
+})
+
+app.get('/controller.js', (req, res) => {
+    res.writeHead(200, {'Content-Type': 'text/javascript'});
+    console.log(controller);
+    
+    res.end(controller.replace(/localhost/g, ip));
+})
 
 app.get('/pesquisar', (req, res) => {
     driver.get(`https://www.youtube.com/results?search_query=${req.param('query')}`)
@@ -112,17 +131,6 @@ app.get('/proximo', (req, res) => {
     element = driver.findElement(
         By.xpath(
             `/html[1]/body[1]/ytd-app[1]/div[1]/ytd-page-manager[1]/ytd-watch-flexy[1]/div[3]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/ytd-player[1]/div[1]/div[1]/div[23]/div[2]/div[1]/a[2]`))
-        
-    element.click()
-
-    return res.send({ status: 'OK' })
-})
-
-app.get('/anterior', (req, res) => {
-    
-    element = driver.findElement(
-        By.xpath(
-            ``))
         
     element.click()
 

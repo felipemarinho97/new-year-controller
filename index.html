@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html ng-app="app">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Page Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.5/angular.min.js"></script>
+    <script src="./controller.js"></script>
+</head>
+<body>
+        <div ng-controller="AppController as app" class="container container-fluid">
+            <h1>Feliz 2019!!!</h1>
+            <br>
+            <form ng-submit="app.search()" >
+                <div class="form-group">
+                    <label for="exampleInputEmail1">Pesquisar Música</label>
+                    <div class="input-group mb-3">
+                        <input ng-model="app.term" class="form-control" id="term" placeholder="Insira o nome da música">
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" type="submit">Pesquisar</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <div style="display: flex; margin: 1em">
+                <button 
+                    style="margin: 0.3em" 
+                    ng-repeat="num in app.nums" 
+                    class="btn btn-primary" 
+                    ng-click="app.choose(num)">{{num}}</button>
+            </div>
+            <div ng-click="app.next()" id="next" class="btn btn-primary">Próxima</div>
+            <div ng-click="app.fullscreen()" id="fullscreen" class="btn btn-primary">Tela Cheia</div>
+        </div>    
+</body>
+</html>

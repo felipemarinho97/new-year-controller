@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/felipemarinho97/new-year-controller#readme",
   "dependencies": {
+    "angular": "^1.7.5",
     "express": "^4.16.4",
     "selenium-webdriver": "^4.0.0-alpha.1"
   },
