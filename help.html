@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html ng-app="app">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Youtube Remote Controller</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.5/angular.min.js"></script>
+    <script src="./controller.js"></script>
+</head>
+<body>
+    <div class="container" ng-controller="AppController as app">
+        <div class="jumbotron">
+            <h1 class="display-4">YouTube Remote Controller!</h1>
+            <p class="lead">Por favor acesse o endereço <a ng-href="http://{{app.ip}}:{{app.port}}/">{{app.ip}}:{{app.port}}/</a> do seu dispositivo para começar a controlar o player.</p>
+            <hr class="my-4">
+            <!-- <p>It uses utility classes for typography and spacing to space content out within the larger container.</p> -->
+            <!-- <a class="btn btn-primary btn-lg" href="#" role="button">Learn more</a> -->
+          </div>
+    </div>    
+</body>
+</html>

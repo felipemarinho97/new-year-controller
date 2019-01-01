@@ -4,19 +4,28 @@ const port = 3000
 const { Builder, By, Key, promise, until } = require('selenium-webdriver');
 const firefox = require('selenium-webdriver/firefox');
 
-var os = require( 'os' );
+const os = require( 'os' );
 
-var fs = require('fs');
-var index = fs.readFileSync('index.html');
-var controller = fs.readFileSync('controller.js', 'utf8');
+const fs = require('fs');
+const index = fs.readFileSync('index.html');
+const help = fs.readFileSync('help.html');
+const controller = fs.readFileSync('controller.js', 'utf8');
 
-var networkInterfaces = os.networkInterfaces( );
-var ip = networkInterfaces['enp3s0'][0]['address'] 
+const networkInterfaces = os.networkInterfaces( );
+const ip = networkInterfaces['enp3s0'][0]['address'] 
 
 let driver = new Builder()
     .forBrowser('firefox')
     .setFirefoxOptions(/* ... */)
     .build();
+
+driver.get('http://localhost:3000/help')
+
+app.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
+});
 
 app.get('/', (req, res) => {
     res.writeHead(200, {'Content-Type': 'text/html'});
@@ -26,6 +35,11 @@ app.get('/', (req, res) => {
 app.get('/controller.js', (req, res) => {
     res.writeHead(200, {'Content-Type': 'text/javascript'});    
     res.end(controller.replace(/localhost/g, ip));
+})
+
+app.get('/help', (req, res) => {
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.end(help);
 })
 
 app.get('/pesquisar', (req, res) => {
@@ -39,14 +53,45 @@ app.get('/pesquisar', (req, res) => {
 app.get('/escolher', (req, res) => {
     const videoSuggestions= `/html[1]/body[1]/ytd-app[1]/div[1]/ytd-page-manager[1]/ytd-watch-flexy[1]/div[3]/div[2]/div[1]/div[2]/ytd-watch-next-secondary-results-renderer[1]/div[2]/ytd-compact-video-renderer[${req.param('num')}]/div[1]/a[1]/h3[1]/span[1]`
     const searchResults = `/html[1]/body[1]/ytd-app[1]/div[1]/ytd-page-manager[1]/ytd-search[1]/div[1]/ytd-two-column-search-results-renderer[1]/div[1]/ytd-section-list-renderer[1]/div[2]/ytd-item-section-renderer[1]/div[2]/ytd-video-renderer[${req.param('num')}]/div[1]`;
-
+    
     element = driver.findElement(By.xpath(searchResults))
     element.click()
-
+    
     element = driver.findElement(By.xpath(videoSuggestions))
     element.click()
-
+    
     fillSugestionVideosWithNumbers(3000);
+    
+    return res.send({ status: 'OK' })
+})
+
+app.get('/skip-ad', (req, res) => {
+    
+    try {
+        driver.switchTo().frame(driver.findElement(
+            By.xpath('//iframe[starts-with(@src, "https://www.youtube.com/embed")]')))
+            .catch((err) => console.log("erro"))
+        } catch (e) {
+        }
+        
+        // ytp-ad-skip-button ytp-button
+    driver.findElement(By.xpath(`//button[@class='ytp-ad-skip-button ytp-button']`))
+      .then(function (element) {
+        driver.wait(function () {
+            return element.isDisplayed().then(function (displayed) {
+                if (!displayed)
+                    return false;
+    
+                return element.isEnabled();
+            });
+        });        
+    });
+
+    driver.wait(until.elementLocated(
+        By.xpath(`//button[@class='ytp-ad-skip-button ytp-button']`)
+    )).then((el) => {                
+            el.click();
+        })
 
     return res.send({ status: 'OK' })
 })
@@ -148,6 +193,9 @@ app.get('/scroll', (req, res) => {
     return res.send({ status: 'OK' })
 })
 
+app.get('/address', (req, res) => {
+    return res.send({ ip, port })
+})
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!\nRunning on network ${ip}`))
 function fillSugestionVideosWithNumbers(timeout) {
