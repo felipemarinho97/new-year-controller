@@ -20,4 +20,8 @@ angular.module('app', [])
         $http.get('http://localhost:3000/tela-cheia') 
       }
 
+      app.scroll = (direction) => {
+        return $http.get('http://localhost:3000/scroll?direction=' + direction)
+      }
+
   })
