@@ -5,6 +5,8 @@ const { Builder, By, Key, promise, until } = require('selenium-webdriver');
 const firefox = require('selenium-webdriver/firefox');
 
 const os = require( 'os' );
+const publicIp = require('public-ip');
+const ipv4 = publicIp.v4()
 
 const fs = require('fs');
 const index = fs.readFileSync('index.html');
@@ -32,22 +34,17 @@ app.get('/', (req, res) => {
     res.end(index);
 })
 
-app.get('/controller.js', (req, res) => {
-    res.writeHead(200, {'Content-Type': 'text/javascript'});    
-    res.end(controller.replace(/localhost/g, ip));
-})
-
 app.get('/help', (req, res) => {
     res.writeHead(200, {'Content-Type': 'text/html'});
     res.end(help);
 })
 
-app.get('/pesquisar', (req, res) => {
+app.get('/pesquisar', async (req, res) => {
     driver.get(`https://www.youtube.com/results?search_query=${req.param('query')}&sp=EgIQAQ%253D%253D`)
 
-    fillResultsVideosWithNumbers(3000)
+    const titles = await fillResultsVideosWithNumbers(3000)
 
-    return res.send({ status: 'OK' })
+    return res.send({ status: 'OK', titles })
 })
 
 app.get('/escolher', (req, res) => {
@@ -197,7 +194,16 @@ app.get('/address', (req, res) => {
     return res.send({ ip, port })
 })
 
-app.listen(port, () => console.log(`Example app listening on port ${port}!\nRunning on network ${ip}`))
+ipv4.then((ipp) => {
+    app.get('/controller.js', (req, res) => {
+        res.writeHead(200, {'Content-Type': 'text/javascript'});    
+        res.end(controller.replace(/localhost/g, ip).replace(/publichost/g, ipp));
+    })
+
+    app.listen(port, () => console.log(`Example app listening on port ${port}!\nRunning on network ${ip}\nOn internet ${ipp}`))
+    
+})
+
 function fillSugestionVideosWithNumbers(timeout) {
     driver.sleep(timeout).then(() => {
         for (let i = 0; i < 11; i++) {
@@ -211,15 +217,28 @@ function fillSugestionVideosWithNumbers(timeout) {
     });
 }
 
-function fillResultsVideosWithNumbers(timeout) {
-    driver.sleep(timeout).then(() => {
-        for (let i = 0; i < 11; i++) {
-            const indicator = `<span style="background: #ff5959;width: 30px;height: 24px;position: absolute;border-radius: 1em;text-align: center;color: white;font-weight: bold;left: 5px;top: 5px;padding-top: 6px;">${i}</span>`
-            const resultVideo = `/html[1]/body[1]/ytd-app[1]/div[1]/ytd-page-manager[1]/ytd-search[1]/div[1]/ytd-two-column-search-results-renderer[1]/div[1]/ytd-section-list-renderer[1]/div[2]/ytd-item-section-renderer[1]/div[2]/ytd-video-renderer[${i}]/div[1]/div[1]/div[1]/div[1]/h3[1]/a[1]`;
-            let timeElement = driver.findElement(By.xpath(resultVideo));
-            timeElement.getAttribute('title').then((value) => {
-                driver.executeScript(`arguments[0].innerHTML = '${indicator + value}';`, timeElement);
-            });
-        }
-    });
+async function fillResultsVideosWithNumbers(timeout) {
+    return new Promise((res, rej) => {
+        const videoTitles = []
+    
+        driver.sleep(timeout).then(() => {
+            for (let i = 0; i < 11; i++) {
+                const indicator = `<span style="background: #ff5959;width: 30px;height: 24px;position: absolute;border-radius: 1em;text-align: center;color: white;font-weight: bold;left: 5px;top: 5px;padding-top: 6px;">${i}</span>`
+                const resultVideo = `/html[1]/body[1]/ytd-app[1]/div[1]/ytd-page-manager[1]/ytd-search[1]/div[1]/ytd-two-column-search-results-renderer[1]/div[1]/ytd-section-list-renderer[1]/div[2]/ytd-item-section-renderer[1]/div[2]/ytd-video-renderer[${i}]/div[1]/div[1]/div[1]/div[1]/h3[1]/a[1]`;
+                let timeElement = driver.findElement(By.xpath(resultVideo));
+    
+                timeElement.getAttribute('title').then((value) => {
+                    driver.executeScript(`arguments[0].innerHTML = '${indicator + value}';`, timeElement);
+                    videoTitles.push({ num: i, name: value })
+
+                    if (videoTitles.length === 10) {
+                        res(videoTitles)
+                    }
+                });
+    
+            }
+    
+        });
+    })
+
 }
