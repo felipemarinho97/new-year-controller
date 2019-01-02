@@ -1,5 +1,5 @@
 angular.module('app', [])
-  .controller('AppController', function($http, $scope) {
+  .controller('AppController', function($http, $timeout) {
       let app = this;
 
       app.nums = [1,2,3,4,5,6,7,8,9,10]
@@ -10,20 +10,36 @@ angular.module('app', [])
         app.titles = []
         $http.get('http://localhost:3000/pesquisar?query=' + app.term).then(res => {
           app.titles = res.data.titles
+          $timeout(cleanTitles, 30000)
         })
         $http.get('http://publichost:8887/pesquisar?query=' + app.term).then(res => {
           app.titles = res.data.titles
+          $timeout(cleanTitles, 30000)
         })
       }
 
       app.choose = (num) => {
-        $http.get('http://localhost:3000/escolher?num=' + num) 
-        $http.get('http://publichost:8887/escolher?num=' + num) 
+        app.titles = []
+        $http.get('http://localhost:3000/escolher?num=' + num).then(res => {
+          app.titles = res.data.titles
+          $timeout(cleanTitles, 30000)
+        })
+        $http.get('http://publichost:8887/escolher?num=' + num).then(res => {
+          app.titles = res.data.titles
+          $timeout(cleanTitles, 30000)
+        })
       }
 
       app.next = () => {
-        $http.get('http://localhost:3000/prox') 
-        $http.get('http://publichost:8887/prox') 
+        app.titles = []
+        $http.get('http://localhost:3000/prox').then(res => {
+          app.titles = res.data.titles
+          $timeout(cleanTitles, 30000)
+        })
+        $http.get('http://publichost:8887/prox').then(res => {
+          app.titles = res.data.titles
+          $timeout(cleanTitles, 30000)
+        })
       }
 
       app.fullscreen = () => {
@@ -37,7 +53,7 @@ angular.module('app', [])
       }
 
       app.skipAd = () => {
-        return $http.get(`http://localhost:3000/skip-ad`)
+        $http.get(`http://localhost:3000/skip-ad`)
         return $http.get(`http://publichost:8887/skip-ad`)
       }
 
@@ -45,5 +61,11 @@ angular.module('app', [])
         app.ip = res.data.ip
         app.port = res.data.port
       })
+
+      app.getDisplay = () => app.titles[0] && app.titles[0].name ? 'block' : 'flex'
+
+      function cleanTitles() {
+        app.titles = app.titles.map(elm => ({ num: elm.num }))
+      }
 
   })

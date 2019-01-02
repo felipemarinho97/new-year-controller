@@ -30,14 +30,14 @@
                     </div>
                 </div>
             </form>
-                <div style="display: block; margin: 5px 0px">
+                <div style='display: {{app.getDisplay()}}; margin: 5px 0px'>
                     <div
                         ng-repeat="title in app.titles" >
                         
                         <button 
                         style="margin: 0.3em" 
                         class="btn btn-sm btn-outline-primary" 
-                        ng-click="app.choose(title.num)">{{title.num}} - {{title.name}}</button>
+                        ng-click="app.choose(title.num)">{{title.num}}<span ng-if='title.name'> - </span>{{title.name}}</button>
                     </div>
                 </div>
                 <div style="display: inline-grid;">
